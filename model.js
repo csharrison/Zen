@@ -107,7 +107,7 @@ Entity.prototype.flock = function(){
 		}
 		/* apply the flocking force (10,-10,30) gives good cycles */
 		alpha = 10;
-		beta = -5;
+		beta = -10;
 		gamma = 30;
 		if(neighs !== 0){
 			Vec2.add(me.v, _acc, _acc);
@@ -169,7 +169,7 @@ Entity.prototype.anti_flock = function(){
 		//if(me.mtype === 0 && preds ===0) me.col ="rgb(0,200,0)";
 		//predator
 		alpha = 10;
-		beta = -100;
+		beta = -30;
 
 		if(0 && neighs !== 0){
 			Vec2.add(me.v, _acc, _acc);
@@ -198,8 +198,8 @@ Entity.prototype.apply_forces = function(){
 		var pred = sys.predator;
 		me.flee(pred);
 		/* noise force */
-		//Vec2.randomize_gauss(0,.0001, _h);
-		//Vec2.add(me.a, _h, me.a);
+		Vec2.randomize_gauss(0,.01, _h);
+		Vec2.add(me.a, _h, me.a);
 
 		if(Vec2.length(me.a) > .5){
 			Vec2.normalize(me.a, me.a);
