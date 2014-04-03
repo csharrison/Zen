@@ -109,8 +109,8 @@ Entity.prototype.apply_forces = function(){
 
 		var pred = sys.predator;
 		var preddist = Vec2.distance(me.x, pred.x);
-		if(preddist < 100){
-			me.col = "blue";
+		if(preddist < me.r + pred.r + 100){
+			//me.col = "blue";
 			Vec2.normal(pred.v, _h);
 			Vec2.add(me.x, _h, _j);
 			var d1 = Vec2.distance(_j, pred.x);
@@ -133,6 +133,12 @@ Entity.prototype.apply_forces = function(){
 				Vec2.subtract(me.x, pred.x, _racc);
 				Vec2.scale(_racc, .1, _racc);
 				Vec2.add(me.a, _racc, me.a);
+			}
+			if(preddist < me.r + pred.r + 5){
+				sys.grid.remove(me);
+				sys.ents.splice(sys.ents.indexOf(me),1);
+				pred.r += .1;
+				return;
 			}
 		}else{
 			me.col = "red";

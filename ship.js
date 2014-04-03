@@ -4,6 +4,7 @@ var Ship = function(dict){
 	this.v = Vec2.create(0,0);
 	this.a = Vec2.create(0,0);
 	this.max_v = 2.3;
+	this.r = 2;
 	this.thrusters = [0,0,0,0];
 }
 Ship.prototype.apply_forces = function(){
@@ -26,13 +27,14 @@ Ship.prototype.update = function(){
 	Vec2.add(this.x, this.v, this.x);
 
 	Vec2.mod(sys.dim, this.x);
+
 }
 
 Ship.prototype.draw = function(){
 	ctx.fillStyle = "yellow";
 
 	ctx.beginPath();
-	ctx.arc(this.x[0], this.x[1], 2, 2*Math.PI, false);
+	ctx.arc(this.x[0], this.x[1], this.r, 2*Math.PI, false);
 	ctx.fill();
 }
 

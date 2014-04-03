@@ -40,6 +40,10 @@ Grid.prototype.get = function(screenx, screeny){
 	return this.list[block_y][block_x];
 }
 
+Grid.prototype.remove = function(elt){
+	elt.block.remove(elt);
+}
+
 Grid.prototype.set = function(elt, old_set, new_set){
 	old_set.remove(elt);
 	new_set.add(elt);
