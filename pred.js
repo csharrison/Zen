@@ -27,7 +27,9 @@ Ship.prototype.update = function(){
 	Vec2.add(this.x, this.v, this.x);
 
 	Vec2.mod(sys.dim, this.x);
-
+	if(this.r > 3){
+		this.r = this.r / 1.005;
+	}
 }
 
 Ship.prototype.draw = function(){

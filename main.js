@@ -1,10 +1,10 @@
-var entities = [];
 
 var block_size = 30;
 var player;
 var sys;
 
 function resize(){
+	var entities = sys.ents;
 	Vec2.set(window.innerWidth, window.innerHeight, sys.dim);
 
 	var bs = block_size;
@@ -26,6 +26,8 @@ function main(){
 
 function update(){
 	var i;
+
+	var entities = sys.ents;
 	player.apply_forces(sys);
 	for(i = 0; i < entities.length; i++){
 		entities[i].apply_forces(sys);
@@ -34,9 +36,19 @@ function update(){
 	for(i = 0; i < entities.length; i++){
 		entities[i].update(sys);
 	}
+
+	var dead = [];
+	for(i = 0; i < entities.length; i++){
+		if(entities[i].dead) dead.push(entities[i]);
+	}
+
+	for(i = 0; i < dead.length; i++){
+		entities.splice(entities.indexOf(dead[i]),1);
+	}
 }
 
 function draw(){
+	var entities = sys.ents;
 	ctx.fillStyle = "rgba(0,0,0, 0.2)";
 	ctx.fillRect(0,0, sys.dim[0], sys.dim[1]);
 
@@ -49,11 +61,11 @@ function draw(){
 function setup(){
 	player = new Ship({});
 	sys = {
-		ents: entities,
+		ents: [],
 		dim: Vec2.create(300,300),
 		vdim: Vec2.create(4, 4),
 		grid: new Grid(),
-		predator: player
+		predator: player,
 	};
 
 	var interval_length = (1/40)*1000 ;
@@ -61,9 +73,10 @@ function setup(){
 	resize();
 	for(var i = 0; i < 500; i++){
 		var e = new Entity({
-			grid: sys.grid
+			grid: sys.grid,
+			mtype: Math.random() > .3 ? 0 : 1
 		});
-		entities.push(e);
+		sys.ents.push(e);
 	}
 
 	$(document)

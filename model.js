@@ -18,7 +18,6 @@ var Entity = function(dict){
 	this.x = dict.x || Vec2.create(100,100);
 	this.v = dict.v || Vec2.create(1,.5);
 	this.a = dict.a || Vec2.create(0, 0);
-	this.col= dict.col ||  "rgb(200,0,0)";;
 
 	Vec2.randomize(0,3000, this.x);
 	Vec2.randomize(-1,1, this.v);
@@ -28,17 +27,56 @@ var Entity = function(dict){
 	this.grid = dict.grid.bind(this);
 
 	this.neighbors = [];
-	this.mtype = 1;
+	this.mtype = dict.mtype || 0;
+	this.col= this.mtype == 0 ?"rgb(0,200,0)" : "rgb(200,0,0)";
 
+	this.dead = false;
 	this.max_v = 1.5;
 
 };
+Entity.prototype.flee = function(pred){
+	var me = this;
+	var preddist = Vec2.distance(me.x, pred.x);
+	if(preddist < me.r + pred.r + 30){
 
-Entity.prototype.apply_forces = function(){
+		Vec2.normal(pred.v, _h);
+		Vec2.add(me.x, _h, _j);
+		var d1 = Vec2.distance(_j, pred.x);
+		Vec2.scale(_h, -1, _h);
+		Vec2.add(me.x, _h, _j);
+		var d2 = Vec2.distance(_j, pred.x);
+
+
+		Vec2.normal(pred.v, _h);
+
+		if(d1 < d2){
+			Vec2.scale(_h, -1, _h);
+		}
+
+		if(preddist > 0) Vec2.scale(_h, 200/preddist, _h);
+
+		Vec2.add(me.a, _h, me.a);
+
+		if(1 || Vec2.length(pred.v) < pred.max_v / 2){
+			Vec2.subtract(me.x, pred.x, _racc);
+			Vec2.scale(_racc, .1, _racc);
+			Vec2.add(me.a, _racc, me.a);
+		}
+		if(preddist < me.r + pred.r + 1){
+			sys.grid.remove(me);
+			me.dead = true;
+			pred.r += me.r / 5;
+			return;
+		}
+	}else{
+		//if(me.mtype ===0 )me.col = "rgb(0,200,0)";
+	}
+}
+
+Entity.prototype.flock = function(){
 		var me = this;
 		var neighbors = this.grid.get_neighbors(this.x[0], this.x[1], 30).to_list();
 		var i;
-		Vec2.set(0,0,me.a);
 		Vec2.set(0,0,_acc);
 		Vec2.set(0,0, _xacc);
 		Vec2.set(0,0, _racc);
@@ -48,7 +86,8 @@ Entity.prototype.apply_forces = function(){
 		rneighs = 0;
 		for(i = 0; i < neighbors.length; i++){
 			var e = neighbors[i];
-			if (me === e) continue;
+			if (e.dead || me === e || me.mtype !== e.mtype) continue;
+
 			var d = Vec2.distance(me.x, e.x);
 			/* flocking force */
 			if(d < 10 ){//* (me.r + e.r)){
@@ -59,18 +98,7 @@ Entity.prototype.apply_forces = function(){
 
 			if(d < me.r + e.r + 2){
 				rneighs++;
-				/*repulsion force*/
-				//me.color = "rgb(0,200,0)";
-				//e.color = "rgb(0,200,0)";
 				Vec2.add(_racc, e.x, _racc);
-
-				/*Vec2.subtract(me.x, e.x, _h);
-
-				ep = 10;
-				Vec2.scale(_h, ep * Math.pow((1 - d/(me.r + e.r)), 3/2), _h)
-
-				Vec2.add(me.a, _h, me.a);
-				*/
 			}
 			else if(d < 30){//* (me.r + e.r)){
 				Vec2.add(_xacc, e.x, _xacc);
@@ -79,10 +107,8 @@ Entity.prototype.apply_forces = function(){
 		}
 		/* apply the flocking force (10,-10,30) gives good cycles */
 		alpha = 10;
-		beta = -10;
+		beta = -5;
 		gamma = 30;
-
-		len = Vec2.length(_acc);
 		if(neighs !== 0){
 			Vec2.add(me.v, _acc, _acc);
 			Vec2.scale(_acc, alpha/neighs, _acc);
@@ -106,43 +132,71 @@ Entity.prototype.apply_forces = function(){
 			Vec2.scale(_racc, gamma, _racc);
 			Vec2.add(me.a, _racc, me.a);
 		}
+}
 
-		var pred = sys.predator;
-		var preddist = Vec2.distance(me.x, pred.x);
-		if(preddist < me.r + pred.r + 100){
-			//me.col = "blue";
-			Vec2.normal(pred.v, _h);
-			Vec2.add(me.x, _h, _j);
-			var d1 = Vec2.distance(_j, pred.x);
-			Vec2.scale(_h, -1, _h);
-			Vec2.add(me.x, _h, _j);
-			var d2 = Vec2.distance(_j, pred.x);
+Entity.prototype.anti_flock = function(){
+		var me = this;
 
-
-			Vec2.normal(pred.v, _h);
-
-			if(d1 < d2){
-				Vec2.scale(_h, -1, _h);
+		var neighbors = this.grid.get_neighbors(this.x[0], this.x[1], 30).to_list();
+		var i;
+		Vec2.set(0,0,_acc);
+		Vec2.set(0,0, _xacc);
+		Vec2.set(0,0, _racc);
+		Vec2.set(0,0, _h);
+		neighs = 0;
+		xneighs = 0;
+		var preds = 0;
+		for(i = 0; i < neighbors.length; i++){
+			var e = neighbors[i];
+			if (e.dead || me === e || me.mtype === e.mtype) continue;
+			if(me.mtype === 0){
+				me.flee(e);
+				//me.col = "blue";
+				preds++;
+				continue;
 			}
-
-			if(d > 0) Vec2.scale(_h, 200/d, _h);
-
-			Vec2.add(me.a, _h, me.a);
-
-			if(1 || Vec2.length(pred.v) < pred.max_v / 2){
-				Vec2.subtract(me.x, pred.x, _racc);
-				Vec2.scale(_racc, .1, _racc);
-				Vec2.add(me.a, _racc, me.a);
+			var d = Vec2.distance(me.x, e.x);
+			/* flocking force */
+			if(d < 10 ){//* (me.r + e.r)){
+				Vec2.add(_acc, e.v, _acc);
+				neighs++;
 			}
-			if(preddist < me.r + pred.r + 5){
-				sys.grid.remove(me);
-				sys.ents.splice(sys.ents.indexOf(me),1);
-				pred.r += .1;
-				return;
+			else if(d < 30){//* (me.r + e.r)){
+				Vec2.add(_xacc, e.x, _xacc);
+				xneighs++;
 			}
-		}else{
-			me.col = "red";
 		}
+		//if(me.mtype === 0 && preds ===0) me.col ="rgb(0,200,0)";
+		//predator
+		alpha = 10;
+		beta = -100;
+
+		if(0 && neighs !== 0){
+			Vec2.add(me.v, _acc, _acc);
+			Vec2.scale(_acc, alpha/neighs, _acc);
+			Vec2.add(me.a, _acc, me.a);
+		}
+
+		if(xneighs !== 0){
+			// Vec2.add(_xacc, me.x, _xacc);
+			Vec2.scale(_xacc, 1/(xneighs ), _xacc);
+			Vec2.subtract(me.x, _xacc, _xacc);
+
+			Vec2.normalize(_xacc, _xacc);
+			Vec2.scale(_xacc, beta, _xacc);
+			Vec2.add(me.a, _xacc, me.a);
+		}else{
+
+ 		}
+}
+
+Entity.prototype.apply_forces = function(){
+		var me = this;
+		Vec2.set(0,0,me.a);
+		me.flock();
+		me.anti_flock();
+		var pred = sys.predator;
+		me.flee(pred);
 		/* noise force */
 		//Vec2.randomize_gauss(0,.0001, _h);
 		//Vec2.add(me.a, _h, me.a);
@@ -168,6 +222,10 @@ Entity.prototype.update = function(){
 
 
 	this.grid.update(this);
+
+	if(this.r > 3){
+		this.r = this.r / 1.002;
+	}
 };
 
 Entity.prototype.draw = function(){
