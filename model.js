@@ -224,7 +224,7 @@ Entity.prototype.update = function(){
 	this.grid.update(this);
 
 	if(this.r > 3){
-		this.r = this.r / 1.002;
+		this.r = this.r / 1.003;
 	}
 };
 
