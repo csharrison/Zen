@@ -3,7 +3,7 @@ var Ship = function(dict){
 	this.x = dict.x || Vec2.create(100,100);
 	this.v = Vec2.create(0,0);
 	this.a = Vec2.create(0,0);
-	this.max_v = 2.3;
+	this.max_v = 2.5;
 	this.r = 2;
 	this.thrusters = [0,0,0,0];
 }
