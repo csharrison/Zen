@@ -74,7 +74,7 @@ function setup(){
 	for(var i = 0; i < 500; i++){
 		var e = new Entity({
 			grid: sys.grid,
-			mtype: Math.random() > .2 ? 0 : 1
+			mtype: Math.random() > .05 ? 0 : 1
 		});
 		sys.ents.push(e);
 	}

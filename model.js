@@ -57,11 +57,13 @@ Entity.prototype.flee = function(pred){
 
 		Vec2.add(me.a, _h, me.a);
 
-		if(1 || Vec2.length(pred.v) < pred.max_v / 2){
-			Vec2.subtract(me.x, pred.x, _racc);
-			Vec2.scale(_racc, .1, _racc);
-			Vec2.add(me.a, _racc, me.a);
-		}
+		var scale = Math.max(1 / (preddist - 5), 1);
+
+		Vec2.subtract(me.x, pred.x, _racc);
+		Vec2.scale(_racc, scale, _racc);
+		Vec2.add(me.a, _racc, me.a);
+
+
 		if(preddist < me.r + pred.r + 1){
 			sys.grid.remove(me);
 			me.dead = true;
@@ -198,7 +200,7 @@ Entity.prototype.apply_forces = function(){
 		var pred = sys.predator;
 		me.flee(pred);
 		/* noise force */
-		Vec2.randomize_gauss(0,.01, _h);
+		Vec2.randomize_gauss(0,.1, _h);
 		Vec2.add(me.a, _h, me.a);
 
 		if(Vec2.length(me.a) > .5){
